@@ -13,12 +13,14 @@
 // END_PREFERENCES
 
 // BEGIN_INCLUDE
+#include <theodis\quicksort\QuickSort.dme>
 #include "__ErrorHandling.dm"
 #include "CommonEvents.dm"
 #include "Event.dm"
 #include "EventScheduler.dm"
 #ifdef __MAIN__ // BEGIN_DEMO
-#include "Test.dm"
+#include "demo\basic\BasicDemo.dm"
+#include "demo\basic\basic.dmm"
 #endif          // END_DEMO
 // END_INCLUDE
 
