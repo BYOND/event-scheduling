@@ -17,7 +17,7 @@ Event/Timer
 	 * Re-schedules, then performs an action.
 	 */
 	fire()
-		src.__scheduler.schedule(src, src.__frequency, rand(10))
+		src.__scheduler.schedule(src, src.__frequency)
 		..()
 
 	var
