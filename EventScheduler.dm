@@ -16,9 +16,9 @@ EventScheduler
 			var/__Trigger/T = src.__trigger_mapping[E]
 			if (T)
 				src.__trigger_mapping.Remove(E)
-				var/time = T.__scheduled_time - src.__tick
+				var/time = T.__scheduled_iterations > 0 ? 16777216 : T.__scheduled_time - src.__tick
 				if (time > 0)
-					var/list/A = src.__scheduled_events[num2text(time)]
+					var/list/A = src.__scheduled_events[num2text(time, 8)]
 					if (A)
 						A -= T
 
@@ -52,9 +52,12 @@ EventScheduler
 		 *					numerical values mean a higher priority. Defaults to 0.
 		 */
 		schedule(var/Event/E, var/ticks as num, var/priority = 0)
-			ticks = num2text(ticks)
+			var/__Trigger/T = new(E, src.__tick, ticks, 0)
+			if (T.__scheduled_iterations > 0)
+				ticks = num2text(16777216, 8)
+			else
+				ticks = num2text(ticks, 8)
 			var/list/A = src.__scheduled_events[ticks]
-			var/__Trigger/T = new(E, src.__tick, text2num(ticks), 0)
 			if (A)
 				A += T
 			else
@@ -80,7 +83,7 @@ EventScheduler
 		time_to_fire(var/Event/E)
 			var/__Trigger/T = src.__trigger_mapping[E]
 			if (T)
-				return T.__scheduled_time - src.__tick
+				return ((T.__scheduled_iterations * 16777216) + T.__scheduled_time) - src.__tick
 			return -1
 
 		/**
@@ -118,6 +121,21 @@ EventScheduler
 				if (--index)
 					src.__scheduled_events["[index]"] = A
 				else
+					for (var/__Trigger/Tr in A)
+						if (Tr.__scheduled_iterations > 0)
+							Tr.__scheduled_iterations--
+							var/new_index = Tr.__scheduled_iterations ? 16777216 : Tr.__scheduled_time
+							var/list/S = src.__scheduled_events[text2num(new_index)]
+							if (S)
+								S += Tr
+							else
+								src.__scheduled_events[text2num(new_index)] = list(Tr)
+						else
+							if (result)
+								result += Tr
+							else
+								result = list(Tr)
+
 					result = A
 			return result
 
@@ -129,6 +147,8 @@ EventScheduler
 				for (var/__Trigger/T in execute)
 					T.__event.fire()
 					src.__trigger_mapping.Remove(T.__event)
+			if (src.__tick == 16777216)
+				src.__tick = 0
 
 		__loop()
 			while (src.__running)
@@ -140,13 +160,16 @@ EventScheduler
 
 __Trigger
 	var
-		Event/__event		= null
-		__inserted_tick		= 0
-		__priority			= 0
-		__scheduled_time	= 0
+		Event/__event			= null
+		__priority				= 0
+		__scheduled_time		= 0
+		__scheduled_iterations 	= 0
 
 	New(var/Event/E, var/insert_time as num, var/ticks as num, var/priority = 0)
-		src.__event			 = E
-		src.__inserted_tick  = insert_time
-		src.__scheduled_time = insert_time + ticks
-		src.__priority		 = priority
+		src.__event			 		= E
+		src.__scheduled_time 		= insert_time + ticks
+		src.__priority		 		= priority
+		var/scheduled_time 			= insert_time + ticks
+		src.__scheduled_iterations	= round(scheduled_time / 16777216)
+		// May not be entirely accurate, we lost accuracy when the user input a big number.
+		src.__scheduled_time		= round(scheduled_time % 16777216, 1)
