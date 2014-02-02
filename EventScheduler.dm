@@ -87,6 +87,16 @@ EventScheduler
 			return -1
 
 		/**
+		 * Sets the delay, in 1/10th seconds, that this scheduler will sleep for, between ticks.
+		 * A delay of 0 will mean the scheduler sleeps for just long enough to allow other work to continue.
+		 * With a delay of 0, you can get several ticks processing in one DM tick.
+		 *
+		 * @param delay The delay, in 1/10th seconds, that this scheduler will sleep for, between ticks.
+		 */
+		set_sleep_delay(var/delay as num)
+			src.__sleep_delay = delay
+
+		/**
 		 * Starts the event loop. You can use this with stop() to be selective about
 		 * when the event loop runs, or to turn off all scheduled events when you are
 		 * shutting down or performing a sensitive operation.
@@ -110,6 +120,7 @@ EventScheduler
 		list/__trigger_mapping	= new()
 		list/__scheduled_events = new()
 		__tick					= 0
+		__sleep_delay			= 1
 
 	proc
 		__shift_down_events()
@@ -152,7 +163,7 @@ EventScheduler
 
 		__loop()
 			while (src.__running)
-				sleep(world.tick_lag)
+				sleep(src.__sleep_delay)
 				src.__iteration()
 
 		__sort_priorities(var/__Trigger/T1, var/__Trigger/T2)
