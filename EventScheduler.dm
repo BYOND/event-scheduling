@@ -130,7 +130,7 @@ EventScheduler
 				src.__scheduled_events.Remove(T)
 				var/index = text2num(T)
 				if (--index)
-					src.__scheduled_events["[index]"] = A
+					src.__scheduled_events[num2text(index, 8)] = A
 				else
 					for (var/__Trigger/Tr in A)
 						if (Tr.__scheduled_iterations > 0)
