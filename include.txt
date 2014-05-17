@@ -1,1 +1,2 @@
-Theodis.QuickSort
+Theodis.QuickSort version=3
+Stephen001.log4dm version=0.1.0
