@@ -151,7 +151,7 @@ EventScheduler
 			return result
 
 		__iteration()
-			src.__tick++
+			src.__tick+=src.__sleep_delay
 			var/list/execute = src.__shift_down_events()
 			if (execute)
 				QuickSort(execute, /EventScheduler/proc/__sort_priorities)
